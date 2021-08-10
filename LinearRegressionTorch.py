@@ -23,7 +23,7 @@ X_boston = torch.Tensor(X_boston)
 y_boston = torch.Tensor(y_boston)
 
 
-class LinearRegressorTorchyFit(torch.nn.Module):
+class LinearRegressorTorchy(torch.nn.Module):
     def __init__(self, n_features, n_labels):
         super().__init__()
         print(f"n_features:{n_features}")
@@ -48,7 +48,7 @@ class LinearRegressorTorchyFit(torch.nn.Module):
         plt.plot(losses)
         plt.show()
 
-linear_regressor_boston = LinearRegressorTorchyFit(X_boston.shape[1], 1)
+linear_regressor_boston = LinearRegressorTorchy(X_boston.shape[1], 1)
 linear_regressor_boston.fit(X_boston, y_boston, epochs=500, lr=0.01, print_losses=False)
 
 from sklearn.metrics import r2_score
