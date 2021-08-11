@@ -39,8 +39,7 @@ class LogisticRegressionTorchy(torch.nn.Module):
             optimiser.zero_grad()
             y_hat = model(X)
             loss = F.binary_cross_entropy(
-                y_hat.reshape(-1, model.n_labels),
-                y.reshape(-1, model.n_labels),
+                y_hat, y
             )  # this only works if the target is dim-1 - should use n_labels
 
             if print_losses:
@@ -65,7 +64,7 @@ X = sc.transform(X)
 
 X = torch.Tensor(X)
 y = torch.Tensor(y)
-# todo: reshape y here
+y = y.reshape(-1, 1)
 
 logistic_regressor = LogisticRegressionTorchy(X.shape[1], 1)
 logistic_regressor.fit(X, y, epochs=500, lr=0.01, print_losses=False)
