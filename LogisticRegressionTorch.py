@@ -1,12 +1,15 @@
 import torch
 from torch.nn import functional as F
 import matplotlib.pyplot as plt
+import pandas as pd
+from datetime import datetime
+from os import path as os_path
 
 from sklearn import datasets
 
 # from sklearn import model_selection
 from sklearn import preprocessing
-from sklearn.metrics import r2_score
+from sklearn.metrics import f1_score
 
 
 class LogisticRegressionTorchy(torch.nn.Module):
@@ -21,13 +24,21 @@ class LogisticRegressionTorchy(torch.nn.Module):
     def forward(self, X):
         return self.layers(X)
 
+    def predict(self, X):
+        result = self.forward(X)
+        rounded_result = result > 0.5
+        return rounded_result
+
     def fit(model, X, y, epochs=100, lr=0.1, print_losses=False):
+        for param in model.parameters():
+            print(f"Parameters are: {param}")
         optimiser = torch.optim.SGD(model.parameters(), lr)  # create optimiser
         losses = []
         for epoch in range(epochs):
             optimiser.zero_grad()
             y_hat = model(X)
-            loss = F.mse_loss(y_hat.reshape(-1), y.reshape(-1))
+            loss = F.binary_cross_entropy(y_hat.reshape(-1), y.reshape(-1))
+
             if print_losses:
                 print(f"loss:{loss}")
             loss.backward()  # Upgrades the .grad -- of each of the parameters (based on backpopulating through the NN)
@@ -57,5 +68,20 @@ logistic_regressor.fit(X, y, epochs=500, lr=0.01, print_losses=False)
 
 from sklearn.metrics import r2_score
 
-r2_error = r2_score(logistic_regressor(X).detach().numpy(), y.detach().numpy())
-print(f"R^2 error: {r2_error}")
+f1_score = f1_score(logistic_regressor.predict(X).detach().numpy(), y.detach().numpy())
+print(f"F1 error: {f1_score}")
+
+output_to_csv = True
+if output_to_csv:
+    X_df = pd.DataFrame(X)
+
+    y_hat = logistic_regressor(X).detach().numpy()
+    y_hat_2 = logistic_regressor.predict(X).detach().numpy()
+
+    X_df["y"] = pd.DataFrame(y)
+    X_df["y_hat"] = pd.DataFrame(y_hat)
+    X_df["y_hat_2"] = pd.DataFrame(y_hat_2)
+    current_time = datetime.now().strftime("%Y_%b_%d-%H_%M")
+    filename = f"LogisticRegressor_breast_cancer_{current_time}.csv"
+    X_df.to_csv(filename)
+    print(f"Output results to:{filename}")
