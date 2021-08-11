@@ -20,6 +20,7 @@ class LogisticRegressionTorchy(torch.nn.Module):
         self.layers = torch.nn.Sequential(
             torch.nn.Linear(n_features, n_labels), torch.nn.Sigmoid()
         )
+        self.n_labels = n_labels
 
     def forward(self, X):
         return self.layers(X)
@@ -37,7 +38,10 @@ class LogisticRegressionTorchy(torch.nn.Module):
         for epoch in range(epochs):
             optimiser.zero_grad()
             y_hat = model(X)
-            loss = F.binary_cross_entropy(y_hat.reshape(-1), y.reshape(-1))
+            loss = F.binary_cross_entropy(
+                y_hat.reshape(-1, model.n_labels),
+                y.reshape(-1, model.n_labels),
+            )  # this only works if the target is dim-1 - should use n_labels
 
             if print_losses:
                 print(f"loss:{loss}")
@@ -61,12 +65,11 @@ X = sc.transform(X)
 
 X = torch.Tensor(X)
 y = torch.Tensor(y)
-
+# todo: reshape y here
 
 logistic_regressor = LogisticRegressionTorchy(X.shape[1], 1)
 logistic_regressor.fit(X, y, epochs=500, lr=0.01, print_losses=False)
 
-from sklearn.metrics import r2_score
 
 f1_score = f1_score(logistic_regressor.predict(X).detach().numpy(), y.detach().numpy())
 print(f"F1 error: {f1_score}")
