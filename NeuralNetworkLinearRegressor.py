@@ -1,10 +1,10 @@
 import torch
 from torch.nn import functional as F
 import matplotlib.pyplot as plt
-from sklearn.metrics import f1_score
 from sklearn.metrics import r2_score
 
 from BaseModel import BaseModel
+from sklearn import datasets
 
 
 class NeuralNetworkRegressor(BaseModel, torch.nn.Module):
@@ -64,11 +64,11 @@ class NeuralNetworkRegressor(BaseModel, torch.nn.Module):
 #     - create a class called BostonDataset which inherits from torch.utils.data.Dataset ✅
 #     - implement the two magic methods which need to be overwritten ✅
 #       - refer to the torch docs if you cant remember which methods these are or why they are required ✅
-#     - check that your dataset works by indexing it and asking for it’s len
+#     - check that your dataset works by indexing it and asking for it’s len ✅
 #     - this doesn’t really look like we did anything specific to torch here. But the reason why we inherit from this class is because it acts as an interface, requiring us to implement things which are used by other torch methods, like the DataLoader
-#     - remind yourself what an abstract class is.
-#       - Discuss: Is torch.utils.data.Dataset an abstract class?
-#         - look at the source code
+#     - remind yourself what an abstract class is.✅
+#       - Discuss: Is torch.utils.data.Dataset an abstract class?✅
+#         - look at the source code✅
 
 
 class BostonDatasetTorchy(torch.utils.data.Dataset):
@@ -90,10 +90,16 @@ class BostonDatasetTorchy(torch.utils.data.Dataset):
 
 
 if __name__ == "__main__":
+    boston = BostonDatasetTorchy()
+    for a, b in [boston[1], boston[100], boston[500]]:
+        print(f"a: {a}")
+        print(f"b: {b}")
+
+
+if __name__ == "X__main__":
     import pandas as pd
     from datetime import datetime
 
-    from sklearn import datasets
     from sklearn import preprocessing
 
     X_boston, y_boston = datasets.load_boston(return_X_y=True)
