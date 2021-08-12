@@ -35,16 +35,6 @@ class NeuralNetworkRegressor(BaseModel, torch.nn.Module):
     def forward(self, X):
         return self.layers(X)
 
-    def get_train_test_val(self, dataset):
-        n = len(dataset)
-        train_len = int(n * 0.8)
-        val_len = int(n * 0.1)
-
-        train_set, val_set, test_set = torch.utils.data.random_split(
-            dataset, [train_len, val_len, len(dataset) - train_len - val_len]
-        )
-        return train_set, val_set, test_set
-
     def fit(
         model, dataset, epochs=100, lr=0.1, print_losses=False, print_losses_graph=True
     ):
@@ -52,9 +42,8 @@ class NeuralNetworkRegressor(BaseModel, torch.nn.Module):
         losses = []
 
         # cores = mp.cpu_count()py
-        train_set, val_set, test_set = model.get_train_test_val(dataset)
 
-        dataloader = DataLoader(train_set, batch_size=100, shuffle=True)
+        dataloader = DataLoader(dataset, batch_size=100, shuffle=True)
 
         for epoch in range(epochs):
             for X, y in dataloader:
@@ -100,17 +89,30 @@ class BostonDatasetTorchy(torch.utils.data.Dataset):
 
 
 if __name__ == "__main__":
+
+    def get_train_test_val(dataset):
+        n = len(dataset)
+        train_len = int(n * 0.8)
+        val_len = int(n * 0.1)
+
+        train_set, val_set, test_set = torch.utils.data.random_split(
+            dataset, [train_len, val_len, len(dataset) - train_len - val_len]
+        )
+        return train_set, val_set, test_set
+
     print()
-    boston = BostonDatasetTorchy()
+    boston_dataset = BostonDatasetTorchy()
     # for a, b in [boston[1], boston[100], boston[500]]:
     #     print(f"a: {a}")
     #     print(f"b: {b}")
 
+    train_dataset, val_dataset, test_dataset = get_train_test_val(boston_dataset)
+
     # X_boston, y_boston = datasets.load_boston(return_X_y=True)
-    example_X, example_y = boston[0]
+    example_X, example_y = train_dataset[0]
     linear_regressor_boston = NeuralNetworkRegressor(len(example_X), len(example_y))
     linear_regressor_boston.fit(
-        boston,
+        train_dataset,
         epochs=1000,
         lr=0.005,
         print_losses=False,
@@ -120,7 +122,8 @@ if __name__ == "__main__":
     from sklearn.metrics import r2_score
 
     r2_error = r2_score(
-        linear_regressor_boston(boston.X).detach().numpy(), boston.y.detach().numpy()
+        linear_regressor_boston(boston_dataset.X).detach().numpy(),
+        boston_dataset.y.detach().numpy(),
     )
     print(f"R^2 error: {r2_error}")
 
@@ -129,12 +132,12 @@ if __name__ == "__main__":
         import pandas as pd
         from datetime import datetime
 
-        X_df = pd.DataFrame(boston.X)
+        X_df = pd.DataFrame(boston_dataset.X)
 
-        y_hat = linear_regressor_boston(boston.X).detach().numpy()
-        y_hat_2 = linear_regressor_boston.predict(boston.X).detach().numpy()
+        y_hat = linear_regressor_boston(boston_dataset.X).detach().numpy()
+        y_hat_2 = linear_regressor_boston.predict(boston_dataset.X).detach().numpy()
 
-        X_df["y"] = pd.DataFrame(boston.y)
+        X_df["y"] = pd.DataFrame(boston_dataset.y)
         X_df["y_hat"] = pd.DataFrame(y_hat)
         X_df["y_hat_2"] = pd.DataFrame(y_hat_2)
         current_time = datetime.now().strftime("%Y_%b_%d-%H_%M")
