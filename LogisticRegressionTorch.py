@@ -15,8 +15,8 @@ from sklearn.metrics import f1_score
 class LogisticRegressionTorchy(torch.nn.Module):
     def __init__(self, n_features, n_labels):
         super().__init__()
-        print(f"n_features:{n_features}")
-        print(f"n_labels:{n_labels}")
+        # print(f"n_features:{n_features}")
+        # print(f"n_labels:{n_labels}")
         self.layers = torch.nn.Sequential(
             torch.nn.Linear(n_features, n_labels), torch.nn.Sigmoid()
         )
@@ -24,6 +24,17 @@ class LogisticRegressionTorchy(torch.nn.Module):
 
     def forward(self, X):
         return self.layers(X)
+
+    def score(self, X, y):
+        f1_score = f1_score(self.predict(X).detach().numpy(), y.detach().numpy())
+        return f1_score
+
+    def score_all(self, train, test, val):
+        train_score = self.score(*train)
+        test_score = self.score(*test)
+        val_score = self.score(*val)
+
+        return train_score, test_score, val_score
 
     def predict(self, X):
         result = self.forward(X)
@@ -51,39 +62,40 @@ class LogisticRegressionTorchy(torch.nn.Module):
         plt.show()
 
 
-X, y = datasets.load_breast_cancer(return_X_y=True)
+if __name__ == "__main__":
+    X, y = datasets.load_breast_cancer(return_X_y=True)
 
-# X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.2)
-# X_train, X_val, y_train, y_val = model_selection.train_test_split(X_train, y_train, test_size=0.25) # 0.25 x 0.8 = 0.2
+    # X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.2)
+    # X_train, X_val, y_train, y_val = model_selection.train_test_split(X_train, y_train, test_size=0.25) # 0.25 x 0.8 = 0.2
 
-# Normalize the data
-sc = preprocessing.StandardScaler()
-sc.fit(X)
-X = sc.transform(X)
+    # Normalize the data
+    sc = preprocessing.StandardScaler()
+    sc.fit(X)
+    X = sc.transform(X)
 
+    X = torch.Tensor(X)
+    y = torch.Tensor(y)
+    y = y.reshape(-1, 1)
 
-X = torch.Tensor(X)
-y = torch.Tensor(y)
-y = y.reshape(-1, 1)
+    logistic_regressor = LogisticRegressionTorchy(X.shape[1], 1)
+    logistic_regressor.fit(X, y, epochs=500, lr=0.01, print_losses=False)
 
-logistic_regressor = LogisticRegressionTorchy(X.shape[1], 1)
-logistic_regressor.fit(X, y, epochs=500, lr=0.01, print_losses=False)
+    f1_score = f1_score(
+        logistic_regressor.predict(X).detach().numpy(), y.detach().numpy()
+    )
+    print(f"F1 error: {f1_score}")
 
+    output_to_csv = True
+    if output_to_csv:
+        X_df = pd.DataFrame(X)
 
-f1_score = f1_score(logistic_regressor.predict(X).detach().numpy(), y.detach().numpy())
-print(f"F1 error: {f1_score}")
+        y_hat = logistic_regressor(X).detach().numpy()
+        y_hat_2 = logistic_regressor.predict(X).detach().numpy()
 
-output_to_csv = True
-if output_to_csv:
-    X_df = pd.DataFrame(X)
-
-    y_hat = logistic_regressor(X).detach().numpy()
-    y_hat_2 = logistic_regressor.predict(X).detach().numpy()
-
-    X_df["y"] = pd.DataFrame(y)
-    X_df["y_hat"] = pd.DataFrame(y_hat)
-    X_df["y_hat_2"] = pd.DataFrame(y_hat_2)
-    current_time = datetime.now().strftime("%Y_%b_%d-%H_%M")
-    filename = f"LogisticRegressor_breast_cancer_{current_time}.csv"
-    X_df.to_csv(filename)
-    print(f"Output results to:{filename}")
+        X_df["y"] = pd.DataFrame(y)
+        X_df["y_hat"] = pd.DataFrame(y_hat)
+        X_df["y_hat_2"] = pd.DataFrame(y_hat_2)
+        current_time = datetime.now().strftime("%Y_%b_%d-%H_%M")
+        filename = f"LogisticRegressor_breast_cancer_{current_time}.csv"
+        X_df.to_csv(filename)
+        print(f"Output results to:{filename}")

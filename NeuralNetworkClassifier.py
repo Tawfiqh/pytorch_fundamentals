@@ -1,13 +1,17 @@
 import torch
 from torch.nn import functional as F
 import matplotlib.pyplot as plt
+from sklearn.metrics import f1_score
+from sklearn.metrics import r2_score
+
+from BaseModel import BaseModel
 
 
-class NeuralNetworkClassifier(torch.nn.Module):
+class NeuralNetworkClassifier(BaseModel, torch.nn.Module):
     def __init__(self, n_features, n_labels):
         super().__init__()
-        print(f"n_features:{n_features}")
-        print(f"n_labels:{n_labels}")
+        # print(f"n_features:{n_features}")
+        # print(f"n_labels:{n_labels}")
 
         middle_layer_size = 2 ** 4
         middle_layer_2_size = 2 ** 5
@@ -62,7 +66,6 @@ if __name__ == "__main__":
 
     # from sklearn import model_selection
     from sklearn import preprocessing
-    from sklearn.metrics import f1_score
 
     X, y = datasets.load_breast_cancer(return_X_y=True)
 
