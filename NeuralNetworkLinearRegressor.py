@@ -35,6 +35,16 @@ class NeuralNetworkRegressor(BaseModel, torch.nn.Module):
     def forward(self, X):
         return self.layers(X)
 
+    def get_train_test_val(self, dataset):
+        n = len(dataset)
+        train_len = int(n * 0.8)
+        val_len = int(n * 0.1)
+
+        train_set, val_set, test_set = torch.utils.data.random_split(
+            dataset, [train_len, val_len, len(dataset) - train_len - val_len]
+        )
+        return train_set, val_set, test_set
+
     def fit(
         model, dataset, epochs=100, lr=0.1, print_losses=False, print_losses_graph=True
     ):
@@ -42,7 +52,9 @@ class NeuralNetworkRegressor(BaseModel, torch.nn.Module):
         losses = []
 
         # cores = mp.cpu_count()py
-        dataloader = DataLoader(dataset, batch_size=100, shuffle=True)
+        train_set, val_set, test_set = model.get_train_test_val(dataset)
+
+        dataloader = DataLoader(train_set, batch_size=100, shuffle=True)
 
         for epoch in range(epochs):
             for X, y in dataloader:
