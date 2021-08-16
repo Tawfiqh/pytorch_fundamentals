@@ -4,10 +4,8 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 
 from BaseModel import BaseModel
-from sklearn import datasets
 from torch.utils.data import DataLoader
-from sklearn import preprocessing
-
+from data.boston_dataset_torch import BostonDatasetTorchy
 import multiprocessing as mp
 
 
@@ -61,33 +59,6 @@ class NeuralNetworkRegressor(BaseModel, torch.nn.Module):
             plt.show()
 
 
-class BostonDatasetTorchy(torch.utils.data.Dataset):
-    def __init__(self) -> None:
-        super().__init__()
-        X, y = datasets.load_boston(return_X_y=True)
-
-        # Normalize the data
-        sc = preprocessing.StandardScaler()
-        sc.fit(X)
-        X = sc.transform(X)
-
-        X = torch.Tensor(X)
-        y = torch.Tensor(y)
-        y = y.reshape(-1, 1)
-
-        self.X = X
-        self.y = y
-
-    # Not dependent on index
-    def __getitem__(self, index):
-        return (self.X[index], self.y[index])
-
-    def __len__(self):
-        length = self.X.shape[1]
-        # len(self.y)
-        return length
-
-
 if __name__ == "__main__":
 
     def get_train_test_val(dataset):
@@ -116,7 +87,7 @@ if __name__ == "__main__":
         epochs=1000,
         lr=0.005,
         print_losses=False,
-        print_losses_graph=True,
+        print_losses_graph=False,
     )
 
     from sklearn.metrics import r2_score
