@@ -5,14 +5,14 @@ from data.get_data import (
     get_car_data_train_test_val_datasets,
 )
 
-from data.get_pytorch_data import get_boston_datasets
+from data.boston_dataset_torch import BostonDatasetTorchy
 
 import pandas as pd
 from time import perf_counter
 from datetime import datetime
-from NeuralNetworkClassifier import NeuralNetworkClassifier
-from LinearRegressionTorch import LinearRegressorTorchy
-from LogisticRegressionTorch import LogisticRegressionTorchy
+from models.NeuralNetworkClassifier import NeuralNetworkClassifier
+from models.LinearRegressionTorch import LinearRegressorTorchy
+from models.LogisticRegressionTorch import LogisticRegressionTorchy
 
 import matplotlib.pyplot as plt
 
@@ -125,17 +125,17 @@ school_results_data_set = get_school_data_train_test_val_datasets()
 car_results_data_set = get_car_data_train_test_val_datasets()
 
 datasets = [
-    ("boston_data_set", boston_data_set),
-    ("diabetes_data_set", diabetes_data_set),
-    ("school_results_data_set", school_results_data_set),
-    ("car_results_data_set", car_results_data_set),
+    ("boston_data_set", BostonDatasetTorchy()),
+    # ("diabetes_data_set", diabetes_data_set),
+    # ("school_results_data_set", school_results_data_set),
+    # ("car_results_data_set", car_results_data_set),
 ]
 
 
 for data_set_name, data_set in datasets:
     models = {
         "LinearRegressorTorchy": LinearRegressorTorchy,
-        "NeuralNetworkClassifier": NeuralNetworkClassifier,
+        # "NeuralNetworkClassifier": NeuralNetworkClassifier,
     }
 
     print()

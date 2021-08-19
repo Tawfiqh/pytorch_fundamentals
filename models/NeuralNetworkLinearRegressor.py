@@ -5,8 +5,9 @@ from sklearn.metrics import r2_score
 
 from BaseModel import BaseModel
 from torch.utils.data import DataLoader
-from data.boston_dataset_torch import BostonDatasetTorchy
 import multiprocessing as mp
+
+from torch.utils.tensorboard import SummaryWriter
 
 
 class NeuralNetworkRegressor(BaseModel, torch.nn.Module):
@@ -36,13 +37,14 @@ class NeuralNetworkRegressor(BaseModel, torch.nn.Module):
     def fit(
         model, dataset, epochs=100, lr=0.1, print_losses=False, print_losses_graph=True
     ):
+        writer = SummaryWriter()
         optimiser = torch.optim.SGD(model.parameters(), lr)  # create optimiser
         losses = []
 
         # cores = mp.cpu_count()py
 
         dataloader = DataLoader(dataset, batch_size=100, shuffle=True)
-
+        batch_idx = 0
         for epoch in range(epochs):
             for X, y in dataloader:
                 optimiser.zero_grad()
@@ -53,13 +55,19 @@ class NeuralNetworkRegressor(BaseModel, torch.nn.Module):
                     print(f"loss:{loss}")
                 loss.backward()  # Upgrades the .grad -- of each of the parameters (based on backpopulating through the NN)
                 optimiser.step()
-                losses.append(loss.item())
+                # losses.append(loss.item())
+                writer.add_scalar("loss", loss.item(), batch_idx)
+                batch_idx += 1
+
+        writer.close()
+
         if print_losses_graph:
             plt.plot(losses)
             plt.show()
 
 
 if __name__ == "__main__":
+    from boston_dataset_torch import BostonDatasetTorchy
 
     def get_train_test_val(dataset):
         n = len(dataset)
