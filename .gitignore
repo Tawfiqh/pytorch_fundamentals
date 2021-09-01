@@ -1,3 +1,8 @@
 *.csv
 __pycache__/*.pyc
 */__pycache__/*
+*/runs/*
+runs/*
+MNIST/raw/*
+*/MNIST/raw/*
+models/mnist_train/MNIST/*

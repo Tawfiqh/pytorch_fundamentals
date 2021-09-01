@@ -20,7 +20,7 @@ class ConvNet(torch.nn.Module):
         self.linear_layers = torch.nn.Sequential(
             torch.nn.Linear(64 * 4 * 4, 10),  # 10 output classes
             torch.nn.ReLU(),
-            torch.nn.Linear(128, 10),
+            torch.nn.Linear(10, 128),
             torch.nn.Softmax(dim=1),
         )
 
@@ -30,7 +30,7 @@ class ConvNet(torch.nn.Module):
         x = self.linear_layers(x)
 
         x = torch.flatten(x, start_dim=1)
-        x = torch.nn.functiona.softmax(x)
+        x = torch.nn.functional.softmax(x)
         return x
 
 
@@ -43,17 +43,16 @@ if __name__ == "__main__":
 
         batch_idx = 0
         for epoch in range(epochs):
-            print(loader)
-            print(loader[0])
-            for features, labels in loader:
+            for features, labels in iter(loader):
+                # print(labels)
                 optimizer.zero_grad()
                 output = model(features)
                 loss = criterion(output, labels)
                 loss.backward()
                 optimizer.step()
                 writer.add_scalar("loss/train", loss.item(), batch_idx)
-                print(f"Loss: {loss.item()}")
                 batch_idx += 1
+            print(f"{epoch} / {epochs}: -- Loss= {loss.item()}")
 
     mnist = torchvision.datasets.MNIST(
         root="./",
